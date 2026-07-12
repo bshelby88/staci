@@ -1,0 +1,10 @@
+[
+  "tests/test_analyze.py::test_default_mode_never_silently_mocks",
+  "tests/test_analyze.py::test_mock_mode_emits_valid_contract",
+  "tests/test_analyze.py::test_mock_not_constant_buy_masquerading",
+  "tests/test_analyze.py::test_rejects_bad_date",
+  "tests/test_analyze.py::test_rejects_invalid_ticker_shell_metachars",
+  "tests/test_analyze.py::test_rejects_nonsense_date_string",
+  "tests/test_analyze.py::test_rejects_overlong_ticker",
+  "tests/test_analyze.py::test_simulated_output_is_labeled_simulated"
+]
