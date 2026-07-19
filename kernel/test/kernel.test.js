@@ -143,6 +143,49 @@ describe("discovery + landing from one routes config", () => {
       expect(got[p]).toBe(true);
     }
   });
+
+  it("toonMiddleware intercepts JSON responses and formats them as TOON markdown if Accept: text/markdown header is present", () => {
+    let middlewareFn = null;
+    const app = {
+      use: (fn) => { middlewareFn = fn; },
+      get: () => {},
+      type: () => {},
+    };
+    k.mountService(app, { routes, serviceInfo: info });
+    expect(typeof middlewareFn).toBe("function");
+
+    const req = {
+      get: (header) => (header.toLowerCase() === "accept" ? "text/markdown" : ""),
+    };
+    
+    let sentContent = null;
+    let contentTypeSet = null;
+    const originalJson = vi.fn();
+    const res = {
+      setHeader: (name, value) => {
+        if (name.toLowerCase() === "content-type") contentTypeSet = value;
+      },
+      send: (content) => {
+        sentContent = content;
+        return res;
+      },
+      json: originalJson,
+    };
+
+    middlewareFn(req, res, () => {});
+    res.json({
+      status: "ok",
+      code: 200,
+      items: [{ id: 1, name: "item1" }],
+    });
+
+    expect(contentTypeSet).toBe("text/markdown; charset=utf-8");
+    expect(originalJson).not.toHaveBeenCalled();
+    expect(sentContent).toContain("status: ok");
+    expect(sentContent).toContain("code: 200");
+    expect(sentContent).toContain("items[1]{id,name}:");
+    expect(sentContent).toContain("  1,item1");
+  });
 });
 
 /* ---------- 5. Facilitator failover ---------- */

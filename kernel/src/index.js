@@ -259,7 +259,107 @@ async function initFacilitators(candidates, { attempts = 4, baseDelayMs = 500, s
  * 6. SERVICE MOUNTING — the ~20 lines every service shares
  * ------------------------------------------------------------------ */
 
+function stringifyToon(val, indent = 0) {
+  const spaces = " ".repeat(indent);
+  if (val === null) return "null";
+  if (typeof val !== "object") {
+    return strValueSafe(String(val));
+  }
+
+  if (Array.isArray(val)) {
+    if (val.length === 0) return "[]";
+    const isPrimitiveArray = val.every(item => item === null || typeof item !== "object");
+    if (isPrimitiveArray) {
+      return val.map(item => strValueSafe(String(item))).join(",");
+    }
+
+    const keys = [];
+    val.forEach(item => {
+      if (item && typeof item === "object") {
+        Object.keys(item).forEach(k => {
+          if (!keys.includes(k)) keys.push(k);
+        });
+      }
+    });
+
+    const header = `[${val.length}]{${keys.join(",")}}`;
+    const rows = val.map(item => {
+      return keys.map(k => {
+        const v = item ? item[k] : undefined;
+        return strValueSafe(v === undefined ? "" : String(v));
+      }).join(",");
+    });
+
+    return header + "\n" + rows.map(r => spaces + "  " + r).join("\n");
+  }
+
+  const lines = [];
+  for (const [k, v] of Object.entries(val)) {
+    if (v === undefined) continue;
+    if (v === null) {
+      lines.push(`${spaces}${k}: null`);
+    } else if (typeof v !== "object") {
+      lines.push(`${spaces}${k}: ${strValueSafe(String(v))}`);
+    } else if (Array.isArray(v)) {
+      if (v.length === 0) {
+        lines.push(`${spaces}${k}[0]:`);
+      } else {
+        const isPrimitiveArray = v.every(item => item === null || typeof item !== "object");
+        if (isPrimitiveArray) {
+          lines.push(`${spaces}${k}[${v.length}]: ${v.map(item => strValueSafe(String(item))).join(",")}`);
+        } else {
+          const subKeys = [];
+          v.forEach(item => {
+            if (item && typeof item === "object") {
+              Object.keys(item).forEach(sk => {
+                if (!subKeys.includes(sk)) subKeys.push(sk);
+              });
+            }
+          });
+          lines.push(`${spaces}${k}[${v.length}]{${subKeys.join(",")}}:`);
+          v.forEach(item => {
+            const rowVal = subKeys.map(sk => {
+              const sv = item ? item[sk] : undefined;
+              return strValueSafe(sv === undefined ? "" : String(sv));
+            }).join(",");
+            lines.push(`${spaces}  ${rowVal}`);
+          });
+        }
+      }
+    } else {
+      lines.push(`${spaces}${k}:`);
+      lines.push(stringifyToon(v, indent + 2));
+    }
+  }
+  return lines.join("\n");
+}
+
+function strValueSafe(str) {
+  if (str.includes("\n") || str.includes(",") || str.includes(":") || str.includes('"')) {
+    return '"' + str.replace(/"/g, '\\"') + '"';
+  }
+  return str;
+}
+
+function toonMiddleware(req, res, next) {
+  const accept = req.get("accept") || "";
+  const originalJson = res.json;
+
+  res.json = function (obj) {
+    if (accept.includes("text/markdown")) {
+      res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+      return res.send(stringifyToon(obj));
+    }
+    return originalJson.call(this, obj);
+  };
+
+  next();
+}
+
 function mountService(app, { routes, serviceInfo }) {
+  if (typeof app.use === "function") {
+    app.use(toonMiddleware);
+  }
   const { manifest, openapi } = buildDiscovery(routes, serviceInfo);
   app.get("/.well-known/x402", (_req, res) => res.json(manifest));
   app.get("/.well-known/x402.json", (_req, res) => res.json(manifest));
@@ -284,5 +384,6 @@ module.exports = {
   createReceiptStore,
   initFacilitators,
   mountService,
+  toonMiddleware,
   USDC_BASE,
 };
