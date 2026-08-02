@@ -1,9 +1,0 @@
-{
-  "name": "staci",
-  "private": true,
-  "version": "0.1.0",
-  "description": "Staci — Royal Agentic Enterprises autonomous x402 fleet. One mind, one repo, one ledger (the chain).",
-  "workspaces": ["kernel", "services/*", "core"],
-  "scripts": { "test": "vitest run" },
-  "devDependencies": { "vitest": "^3.0.0" }
-}

@@ -1,0 +1,101 @@
+{
+  "project_name": "RAE 100% Recovery & Flaw Remediation Study",
+  "audit_date": "2026-08-02",
+  "audit_metrics": {
+    "antigravity_artifacts_audited": 41,
+    "obsidian_vault_notes_audited": 214,
+    "nimbus_codebase_files": 1391,
+    "total_onedrive_files": 36068,
+    "historical_waste_usd": 2450.00,
+    "historical_verifiable_revenue_usd": 194.75,
+    "unworked_ideas_cataloged": 22
+  },
+  "agent_fleet_registry": [
+    {
+      "name": "AEK Kernel (rae-aek)",
+      "role": "Cloud Control Plane & REST API Kernel",
+      "runtime": "FastAPI + Fly Managed Postgres",
+      "status": "v0.4 Architecture Defined; needs skip-locking row queue deployment"
+    },
+    {
+      "name": "Staci (staci-core)",
+      "role": "Sole Executor & Task Router",
+      "runtime": "Fly.io Node.js (brain-poller.js)",
+      "status": "Live HTTP 200; blocked by unpushed health commit traps"
+    },
+    {
+      "name": "BEAN (bean-agent)",
+      "role": "Lead Technical Orchestrator & Integration Poller",
+      "runtime": "Fly.io Node.js (bean-poller.js) / FastAPI port 8766",
+      "status": "Requires SQLite memory synchronization & authenticated heartbeats"
+    },
+    {
+      "name": "Nimbus (nimbus-agent)",
+      "role": "Program Manager & Payment Sprint Coordinator",
+      "runtime": "bshelby88/nimbus-agent on Fly.io",
+      "status": "Code rescued locally (1391 files); missing org-scope token & unpushed health endpoint"
+    },
+    {
+      "name": "Tiffany",
+      "role": "Creative Content Production Engine",
+      "runtime": "HeyGen Roxue API / Vercel theta app",
+      "status": "Content pipeline built; needs n8n cron trigger"
+    },
+    {
+      "name": "Hermes",
+      "role": "Outbound Engine & Community Seeding",
+      "runtime": "Cron allowlist runner / Dropbox sprit-mirror",
+      "status": "Automated scanner built; needs Substack/awesome-x402 directory hooks"
+    },
+    {
+      "name": "Chronicler",
+      "role": "Wallet Watcher & Telegram Telemetry",
+      "runtime": "Base 0x9e6A watcher / Telegram bot",
+      "status": "Alert dispatcher functional"
+    },
+    {
+      "name": "Franklin",
+      "role": "Financial Truth & Revenue Reconciliation",
+      "runtime": "Governance Spec / Google Drive register",
+      "status": "Role documented; adapter set to none"
+    }
+  ],
+  "failure_mode_categories": {
+    "false_done_ack": 10,
+    "stalled_ideas_comms_breakdown": 10
+  },
+  "top_monetization_shelf_assets": [
+    {
+      "id": 1,
+      "name": "Dispute Forge",
+      "type": "Human & x402 Product",
+      "readiness": "100%",
+      "projected_pricing": "$49 direct / $5 x402 call",
+      "historical_proof": "$149 sale confirmed"
+    },
+    {
+      "id": 20,
+      "name": "Build Your Own BEAN Course",
+      "type": "Gumroad / Digital Product",
+      "readiness": "95%",
+      "projected_pricing": "$197 per seat",
+      "historical_proof": "10+ waitlist users, 9.5/10 rating"
+    },
+    {
+      "id": 9,
+      "name": "Sentry Forge x402 Endpoint",
+      "type": "x402 Microservice",
+      "readiness": "90%",
+      "projected_pricing": "$5 / case analysis",
+      "historical_proof": "33x margin on Anthropic Haiku"
+    },
+    {
+      "id": 22,
+      "name": "22 Base NFTs",
+      "type": "On-Chain Storefront Assets",
+      "readiness": "100%",
+      "projected_pricing": "OpenSea listing @ 0.01 - 0.05 ETH",
+      "historical_proof": "Minted on Base"
+    }
+  ]
+}

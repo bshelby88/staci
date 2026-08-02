@@ -1,1 +1,0 @@
-{ "name": "@staci/core", "version": "0.1.0", "main": "staci.js", "dependencies": { "@staci/kernel": "*" } }
