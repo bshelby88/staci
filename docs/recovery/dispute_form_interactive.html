@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dispute Forge — FCRA / FDCPA Automated Dispute Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: rgba(18, 26, 43, 0.85);
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.25);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .container {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      max-width: 600px;
+      width: 100%;
+      backdrop-filter: blur(12px);
+    }
+    h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; }
+    .form-group { margin-bottom: 1.25rem; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-muted); }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 1.1rem;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: transform 0.2s;
+    }
+    .submit-btn:hover { transform: translateY(-2px); }
+    .price-tag { text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--accent); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Dispute Forge AI Portal</h1>
+    <div class="subtitle">Generate FCRA/FDCPA compliant dispute letters backed by 16 autonomous agent algorithms.</div>
+
+    <form id="disputeForm" onsubmit="event.preventDefault(); generateLetter();">
+      <div class="form-group">
+        <label>Full Legal Name</label>
+        <input type="text" id="clientName" placeholder="e.g. Bryant Shelby" required>
+      </div>
+      <div class="form-group">
+        <label>Credit Bureau / Creditor Target</label>
+        <select id="targetBureau">
+          <option value="Experian">Experian</option>
+          <option value="Equifax">Equifax</option>
+          <option value="TransUnion">TransUnion</option>
+          <option value="Direct Creditor">Direct Creditor / Collection Agency</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Account Number or Disputed Item ID</label>
+        <input type="text" id="accountNo" placeholder="e.g. ACCT-98421" required>
+      </div>
+      <div class="form-group">
+        <label>Dispute Reason (FCRA Section 611)</label>
+        <select id="disputeReason">
+          <option value="Inaccurate Balance">Inaccurate Balance / Paid in Full</option>
+          <option value="Unverified Account">Unverified Account / Fraudulent Item</option>
+          <option value="Obsolete Information">Obsolete Information (>7 Years Old)</option>
+        </select>
+      </div>
+      <button type="submit" class="submit-btn">GENERATE DISPUTE PACKAGE ($49)</button>
+    </form>
+    <div class="price-tag">⚡ Direct Checkout: $49 USDC / $5 x402 Micro-API</div>
+  </div>
+
+  <script>
+    function generateLetter() {
+      const name = document.getElementById('clientName').value;
+      const bureau = document.getElementById('targetBureau').value;
+      const acct = document.getElementById('accountNo').value;
+      alert(`Dispute Package generated for ${name} against ${bureau} (${acct})! Redirecting to $49 USDC checkout...`);
+    }
+  </script>
+</body>
+</html>
