@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Royal Founders Pass — Base Mainnet Diamond Pass Mint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #060913;
+      --card: rgba(15, 23, 42, 0.85);
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.3);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .mint-card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 3rem;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px var(--accent-glow);
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+    p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; }
+    .supply-box {
+      background: rgba(0,0,0,0.4);
+      border-radius: 16px;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-around;
+    }
+    .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .stat-val { font-size: 1.4rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--accent); }
+    .mint-btn {
+      width: 100%;
+      padding: 1.2rem;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #000;
+      border: none;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .mint-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px var(--accent-glow);
+    }
+    .treasury-info {
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="mint-card">
+    <div class="badge">BASE MAINNET · ERC-721</div>
+    <h1>Royal Founders Pass</h1>
+    <p>Exclusive access pass for Royal Agentic Enterprises. Grants 100% lifetime API access, revenue dividend rights, and voting power across 16 autonomous agent services.</p>
+
+    <div class="supply-box">
+      <div>
+        <div class="stat-label">TOTAL SUPPLY</div>
+        <div class="stat-val">100</div>
+      </div>
+      <div>
+        <div class="stat-label">MINT PRICE</div>
+        <div class="stat-val">0.1 ETH</div>
+      </div>
+      <div>
+        <div class="stat-label">REMAINING</div>
+        <div class="stat-val" id="remaining">100</div>
+      </div>
+    </div>
+
+    <button class="mint-btn" id="mintBtn" onclick="mintPass()">CONNECT WALLET TO MINT</button>
+
+    <div class="treasury-info">
+      Verified Base Wallet: 0x9e6A95B5Bf1190B5aCD00508a8E9c72eDEd5fB60
+    </div>
+  </div>
+
+  <script>
+    let connectedAccount = null;
+
+    async function mintPass() {
+      if (typeof window.ethereum === 'undefined') {
+        alert("Please install MetaMask or Coinbase Wallet to mint!");
+        return;
+      }
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        connectedAccount = accounts[0];
+        document.getElementById('mintBtn').innerText = `MINT PASS (0.1 ETH)`;
+        alert(`Connected wallet: ${connectedAccount}. Ready to mint on Base Mainnet!`);
+      } catch (err) {
+        console.error("User rejected connection:", err);
+      }
+    }
+  </script>
+</body>
+</html>
