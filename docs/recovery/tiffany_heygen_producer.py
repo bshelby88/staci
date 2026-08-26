@@ -8,14 +8,16 @@ import time
 import urllib.request
 from typing import Dict, Any, Optional
 
+from credential_config import require_kernel_api_key
+
 HEYGEN_API_URL = "https://api.heygen.com/v2/video/generate"
 ROXUE_AVATAR_ID = "c3-0203.c3.heyron.ai"
 KERNEL_URL = "https://rae-kernel.fly.dev/v1/events"
-API_KEY = "63d86692649b48deb7161f4898b6ab3bfc30485a15f547aa87b927777c95d3dd"
 
 class TiffanyHeyGenProducer:
-    def __init__(self, avatar_id: str = ROXUE_AVATAR_ID):
+    def __init__(self, avatar_id: str = ROXUE_AVATAR_ID, kernel_api_key: Optional[str] = None):
         self.avatar_id = avatar_id
+        self.kernel_api_key = require_kernel_api_key(kernel_api_key)
 
     def generate_shorts_script(self, product_name: str, price_str: str, hook: str, cta_link: str) -> Dict[str, str]:
         """Generates 30-second high-virality video script for TikTok / YouTube Shorts."""
@@ -72,7 +74,7 @@ Get full access to {product_name} for just {price_str}. Tap the link below: {cta
         }
 
         # Dispatch telemetry to AEK Kernel
-        headers = {'Content-Type': 'application/json', 'X-API-Key': API_KEY}
+        headers = {'Content-Type': 'application/json', 'X-API-Key': self.kernel_api_key}
         try:
             req = urllib.request.Request(KERNEL_URL, data=json.dumps(event_payload).encode('utf-8'), headers=headers)
             with urllib.request.urlopen(req) as resp:

@@ -6,14 +6,18 @@ Tracks secondary Base NFT marketplace sales and routes creator royalties to wall
 import json
 import time
 import urllib.request
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+
+from credential_config import require_kernel_api_key
 
 TARGET_WALLET = "0x9e6A95B5Bf1190B5aCD00508a8E9c72eDEd5fB60"
 ROYALTY_BPS = 750 # 7.5% creator fee
 KERNEL_URL = "https://rae-kernel.fly.dev/v1/events"
-API_KEY = "63d86692649b48deb7161f4898b6ab3bfc30485a15f547aa87b927777c95d3dd"
 
 class NFTRoyaltyCollector:
+    def __init__(self, api_key: Optional[str] = None):
+        self.api_key = require_kernel_api_key(api_key)
+
     def calculate_royalty(self, sale_price_eth: float) -> float:
         return round(sale_price_eth * (ROYALTY_BPS / 10000), 5)
 
@@ -42,7 +46,7 @@ class NFTRoyaltyCollector:
             "payload": royalty_data
         }
 
-        headers = {'Content-Type': 'application/json', 'X-API-Key': API_KEY}
+        headers = {'Content-Type': 'application/json', 'X-API-Key': self.api_key}
         try:
             req = urllib.request.Request(KERNEL_URL, data=json.dumps(payload).encode('utf-8'), headers=headers)
             with urllib.request.urlopen(req) as resp:

@@ -6,12 +6,16 @@ Automates formatting & publishing weekly 'Agent Commerce Update' articles.
 import json
 import time
 import urllib.request
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+
+from credential_config import require_kernel_api_key
 
 KERNEL_URL = "https://rae-kernel.fly.dev/v1/events"
-API_KEY = "63d86692649b48deb7161f4898b6ab3bfc30485a15f547aa87b927777c95d3dd"
 
 class SubstackWeeklyPublisher:
+    def __init__(self, api_key: Optional[str] = None):
+        self.api_key = require_kernel_api_key(api_key)
+
     def format_weekly_edition(self, edition_number: int, revenue_usd: float, active_agents: int) -> Dict[str, Any]:
         title = f"Agent Commerce Weekly #{edition_number}: $1,470 Revenue & 16 Agents Live"
         subtitle = "A deep dive into laptop-off agentic execution, Base USDC micropayments, and x402 Bazaar indexing."
@@ -54,7 +58,7 @@ class SubstackWeeklyPublisher:
             "payload": post_data
         }
 
-        headers = {'Content-Type': 'application/json', 'X-API-Key': API_KEY}
+        headers = {'Content-Type': 'application/json', 'X-API-Key': self.api_key}
         try:
             req = urllib.request.Request(KERNEL_URL, data=json.dumps(payload).encode('utf-8'), headers=headers)
             with urllib.request.urlopen(req) as resp:

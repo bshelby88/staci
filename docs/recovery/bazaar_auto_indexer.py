@@ -6,7 +6,9 @@ Automates health verification & Bazaar discovery registration for all 14 Fly.io 
 import json
 import time
 import urllib.request
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+
+from credential_config import require_kernel_api_key
 
 X402_FLY_SERVICES = [
     {"name": "tradingagents-x402", "url": "https://tradingagents-x402.fly.dev/health", "price_usdc": 1.00},
@@ -26,9 +28,11 @@ X402_FLY_SERVICES = [
 ]
 
 KERNEL_URL = "https://rae-kernel.fly.dev/v1/events"
-API_KEY = "63d86692649b48deb7161f4898b6ab3bfc30485a15f547aa87b927777c95d3dd"
 
 class BazaarAutoIndexer:
+    def __init__(self, api_key: Optional[str] = None):
+        self.api_key = require_kernel_api_key(api_key)
+
     def verify_and_index_catalog(self) -> List[Dict[str, Any]]:
         results = []
         print("[BazaarIndexer] Verifying health and generating Bazaar discovery payloads for 14 x402 endpoints...")
@@ -54,7 +58,7 @@ class BazaarAutoIndexer:
                 "payload": bazaar_manifest
             }
 
-            headers = {'Content-Type': 'application/json', 'X-API-Key': API_KEY}
+            headers = {'Content-Type': 'application/json', 'X-API-Key': self.api_key}
             try:
                 req = urllib.request.Request(KERNEL_URL, data=json.dumps(payload).encode('utf-8'), headers=headers)
                 with urllib.request.urlopen(req) as resp:
