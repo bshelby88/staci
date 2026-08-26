@@ -4,13 +4,13 @@ Formats and dispatches submission payloads for AI Directories and Substack publi
 """
 
 import json
-import os
 import time
 import urllib.request
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+
+from credential_config import require_kernel_api_key
 
 KERNEL_URL = "https://rae-kernel.fly.dev/v1/events"
-API_KEY = os.environ.get("RAE_KERNEL_API_KEY")
 
 DIRECTORIES = [
     {
@@ -40,6 +40,9 @@ DIRECTORIES = [
 ]
 
 class HermesOutboundEngine:
+    def __init__(self, api_key: Optional[str] = None):
+        self.api_key = require_kernel_api_key(api_key)
+
     def format_substack_post(self, title: str, summary: str, highlights: List[str]) -> Dict[str, Any]:
         """Formats weekly Substack article for 'What's Moving in Agent Commerce'."""
         body = f"""# {title}
@@ -67,7 +70,7 @@ class HermesOutboundEngine:
                 "payload": d
             }
             
-            headers = {'Content-Type': 'application/json', 'X-API-Key': API_KEY}
+            headers = {'Content-Type': 'application/json', 'X-API-Key': self.api_key}
             try:
                 req = urllib.request.Request(KERNEL_URL, data=json.dumps(payload).encode('utf-8'), headers=headers)
                 with urllib.request.urlopen(req) as resp:

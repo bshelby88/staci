@@ -5,16 +5,18 @@ Runs all fleet modules: Skip-Lock Queue, Deterministic Envelope, Monetization En
 """
 
 import sys
-import os
 import time
 import json
 import urllib.request
 
+from credential_config import require_kernel_api_key
 from skip_lock_queue import FleetSkipLockQueue
 from deterministic_envelope_harness import DeterministicEnvelope
 from chronicler_wallet_watcher import ChroniclerWalletWatcher
 
 def main():
+    api_key = require_kernel_api_key()
+
     print("=================================================================")
     print("   RAE AUTONOMOUS FLEET: MAKE IT HAPPEN EXECUTION PIPELINE   ")
     print("=================================================================\n")
@@ -36,7 +38,7 @@ def main():
     print("Step 1: All 5 Recovery Directives Enqueued in AEK Skip-Lock Queue.")
 
     # 2. Process Directives inside Deterministic AI Envelope
-    envelope = DeterministicEnvelope(agent_id="MakeItHappen-Autonomous-Runner")
+    envelope = DeterministicEnvelope(agent_id="MakeItHappen-Autonomous-Runner", api_key=api_key)
     
     print("\nStep 2: Processing Queue Tasks inside Deterministic AI Envelopes...")
     processed_count = 0
@@ -57,15 +59,13 @@ def main():
 
     # 3. Execute Chronicler Base Blockchain Verification
     print("\nStep 4: Running Chronicler Base Mainnet RPC Verification...")
-    watcher = ChroniclerWalletWatcher()
+    watcher = ChroniclerWalletWatcher(api_key=api_key)
     block_height = watcher.get_latest_block_number()
     print(f"[{watcher.wallet[:10]}...] Current Base Mainnet Block Height: {block_height}")
 
     # 4. Dispatch Master Completion Event to rae-kernel on Fly.io
     print("\nStep 5: Emitting Master Fleet Status to Fly.io AEK Kernel...")
     url = "https://rae-kernel.fly.dev/v1/events"
-    api_key = os.environ.get("RAE_KERNEL_API_KEY")
-
     master_event = {
         "type": "fleet.recovery.complete",
         "source": "MakeItHappen_Autonomous_Engine",

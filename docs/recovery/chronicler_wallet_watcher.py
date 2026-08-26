@@ -4,20 +4,21 @@ Monitors Base wallet 0x9e6A for verified USDC on-chain transfers.
 """
 
 import json
-import os
 import time
 import urllib.request
 from typing import Optional, Dict, Any
 
+from credential_config import require_kernel_api_key
+
 BASE_RPC_URL = "https://mainnet.base.org"
 TARGET_WALLET = "0x9e6A95B5Bf1190B5aCD00508a8E9c72eDEd5fB60"
 KERNEL_URL = "https://rae-kernel.fly.dev/v1/events"
-API_KEY = os.environ.get("RAE_KERNEL_API_KEY")
 
 class ChroniclerWalletWatcher:
-    def __init__(self, wallet_address: str = TARGET_WALLET, rpc_url: str = BASE_RPC_URL):
+    def __init__(self, wallet_address: str = TARGET_WALLET, rpc_url: str = BASE_RPC_URL, api_key: Optional[str] = None):
         self.wallet = wallet_address.lower()
         self.rpc_url = rpc_url
+        self.api_key = require_kernel_api_key(api_key)
 
     def query_rpc(self, method: str, params: list) -> Optional[Dict[str, Any]]:
         payload = {
@@ -76,7 +77,7 @@ class ChroniclerWalletWatcher:
                 "customer_id": customer_id
             }
         }
-        headers = {'Content-Type': 'application/json', 'X-API-Key': API_KEY}
+        headers = {'Content-Type': 'application/json', 'X-API-Key': self.api_key}
         req = urllib.request.Request(KERNEL_URL, data=json.dumps(payload).encode('utf-8'), headers=headers)
         
         try:

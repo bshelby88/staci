@@ -4,18 +4,19 @@ System Standard for RAE Task Runners (Staci, BEAN, Nimbus)
 """
 
 import sys
-import os
 import subprocess
 import time
 import json
 import urllib.request
 from typing import Callable, Any, Optional
 
+from credential_config import require_kernel_api_key
+
 class DeterministicEnvelope:
     def __init__(self, agent_id: str, kernel_url: str = "https://rae-kernel.fly.dev", api_key: Optional[str] = None):
         self.agent_id = agent_id
         self.kernel_url = kernel_url
-        self.api_key = api_key or os.environ.get("RAE_KERNEL_API_KEY")
+        self.api_key = require_kernel_api_key(api_key)
 
     def execute_task(self, task_id: str, command: list[str], verifier_fn: Optional[Callable[[str], bool]] = None) -> dict:
         """
