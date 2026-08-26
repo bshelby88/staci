@@ -3,19 +3,19 @@ RAE Monetization Microservice Engine
 Powers Dispute Forge ($49 direct / $5 x402 API) and Sentry Forge ($5/case API).
 """
 
-from fastapi import FastAPI, Header, HTTPException, Depends
-from pydantic import BaseModel, Field
+from fastapi import FastAPI, Header, HTTPException
+from pydantic import BaseModel
 import uvicorn
-import re
-from typing import Optional, Dict, Any
+from typing import Optional
 
 app = FastAPI(
     title="RAE Monetization & Machine Commerce Gateway",
     version="1.0.0",
-    description="Exposes verified Dispute Forge letter generation and Sentry Forge x402 case analysis endpoints."
+    description="Paid fulfillment is disabled until Base USDC payment verification is implemented."
 )
 
 BASE_WALLET = "0x9e6A95B5Bf1190B5aCD00508a8E9c72eDEd5fB60"
+PAYMENT_DISABLED_DETAIL = "Payment verification unavailable; paid fulfillment is disabled"
 
 class DisputeRequest(BaseModel):
     client_name: str
@@ -30,19 +30,18 @@ class SentryCaseRequest(BaseModel):
     claimed_damages_usd: float
 
 def verify_base_usdc_payment(tx_hash: Optional[str], required_amount: float) -> bool:
-    """Verifies Base mainnet USDC transaction hash format against Base wallet."""
-    if not tx_hash:
-        return False
-    # Validate EVM transaction hash regex format (0x + 64 hex chars)
-    if not re.match(r"^0x[a-fA-F0-9]{64}$", tx_hash):
-        return False
-    return True
+    """Fail closed until chain, transfer, confirmation, and replay checks exist."""
+    return False
+
+def reject_unverified_payment_gate() -> None:
+    raise HTTPException(status_code=503, detail=PAYMENT_DISABLED_DETAIL)
 
 @app.get("/healthz")
 def healthz():
     return {
         "status": "ok",
         "wallet": BASE_WALLET,
+        "payment_verification": "disabled",
         "active_products": ["Dispute Forge ($49)", "Sentry Forge ($5)", "BEAN Course ($197)"]
     }
 
@@ -54,7 +53,7 @@ def list_products():
                 "id": "prod_dispute_forge",
                 "name": "Dispute Forge Credit Defense Package",
                 "human_price_usd": 49.00,
-                "x402_price_usd": 5.00,
+                "payment_status": "disabled",
                 "checkout_url": "https://gumroad.com/l/dispute-forge-49"
             },
             {
@@ -66,7 +65,7 @@ def list_products():
             {
                 "id": "prod_sentry_forge_api",
                 "name": "Sentry Forge Legal Intake Analysis x402",
-                "x402_price_usd": 5.00,
+                "payment_status": "disabled",
                 "endpoint": "POST /v1/sentry/analyze-case"
             }
         ]
@@ -74,58 +73,11 @@ def list_products():
 
 @app.post("/v1/dispute/generate")
 def generate_dispute_letter(req: DisputeRequest, x_402_payment_tx: Optional[str] = Header(None, alias="X-402-Payment-Tx")):
-    # Check for x402 USDC payment header
-    if not verify_base_usdc_payment(x_402_payment_tx, 5.00):
-        raise HTTPException(
-            status_code=402,
-            detail=f"Payment Required: Provide valid $5.00 Base USDC tx hash in 'X-402-Payment-Tx' header to wallet {BASE_WALLET} or checkout at https://gumroad.com/l/dispute-forge-49"
-        )
-
-    letter_body = f"""NOTICE OF FORMAL DISPUTE & VALIDATION DEMAND
-Date: 2026-08-02
-To: {req.creditor_name}
-Re: Account Ending in #{req.account_number_last4}
-
-Consumer: {req.client_name}
-Claimed Violation: {req.fdcpa_violation_claimed}
-
-STATEMENT OF DISPUTE:
-I am formally disputing the validity of the alleged debt under {req.fdcpa_violation_claimed}. {req.dispute_reason}
-
-DEMAND FOR VERIFICATION:
-Provide complete verification of this debt within 30 days of receipt, including original contract, full payment ledger, and proof of license to collect in this jurisdiction.
-
-Sincerely,
-{req.client_name}
-"""
-    return {
-        "status": "success",
-        "verified_payment_tx": x_402_payment_tx,
-        "dispute_package": {
-            "client_name": req.client_name,
-            "creditor_name": req.creditor_name,
-            "generated_letter": letter_body
-        }
-    }
+    reject_unverified_payment_gate()
 
 @app.post("/v1/sentry/analyze-case")
 def analyze_case(req: SentryCaseRequest, x_402_payment_tx: Optional[str] = Header(None, alias="X-402-Payment-Tx")):
-    if not verify_base_usdc_payment(x_402_payment_tx, 5.00):
-        raise HTTPException(
-            status_code=402,
-            detail=f"Payment Required: Valid $5.00 Base USDC tx required in 'X-402-Payment-Tx' header to wallet {BASE_WALLET}"
-        )
-
-    return {
-        "status": "success",
-        "verified_payment_tx": x_402_payment_tx,
-        "analysis": {
-            "jurisdiction": req.jurisdiction,
-            "claimed_damages": req.claimed_damages_usd,
-            "recommended_strategy": "File FDCPA statutory damages claim ($1,000 per violation + attorney fees)",
-            "violation_score": 9.2
-        }
-    }
+    reject_unverified_payment_gate()
 
 if __name__ == "__main__":
     print("Launching RAE Monetization Microservice on port 8090...")
