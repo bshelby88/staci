@@ -4,12 +4,13 @@ Formats and dispatches submission payloads for AI Directories and Substack publi
 """
 
 import json
+import os
 import time
 import urllib.request
 from typing import List, Dict, Any
 
 KERNEL_URL = "https://rae-kernel.fly.dev/v1/events"
-API_KEY = "63d86692649b48deb7161f4898b6ab3bfc30485a15f547aa87b927777c95d3dd"
+API_KEY = os.environ.get("RAE_KERNEL_API_KEY")
 
 DIRECTORIES = [
     {

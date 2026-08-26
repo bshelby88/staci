@@ -5,6 +5,7 @@ Runs all fleet modules: Skip-Lock Queue, Deterministic Envelope, Monetization En
 """
 
 import sys
+import os
 import time
 import json
 import urllib.request
@@ -63,7 +64,7 @@ def main():
     # 4. Dispatch Master Completion Event to rae-kernel on Fly.io
     print("\nStep 5: Emitting Master Fleet Status to Fly.io AEK Kernel...")
     url = "https://rae-kernel.fly.dev/v1/events"
-    api_key = "63d86692649b48deb7161f4898b6ab3bfc30485a15f547aa87b927777c95d3dd"
+    api_key = os.environ.get("RAE_KERNEL_API_KEY")
 
     master_event = {
         "type": "fleet.recovery.complete",

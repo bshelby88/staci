@@ -4,6 +4,7 @@ Monitors Base wallet 0x9e6A for verified USDC on-chain transfers.
 """
 
 import json
+import os
 import time
 import urllib.request
 from typing import Optional, Dict, Any
@@ -11,7 +12,7 @@ from typing import Optional, Dict, Any
 BASE_RPC_URL = "https://mainnet.base.org"
 TARGET_WALLET = "0x9e6A95B5Bf1190B5aCD00508a8E9c72eDEd5fB60"
 KERNEL_URL = "https://rae-kernel.fly.dev/v1/events"
-API_KEY = "63d86692649b48deb7161f4898b6ab3bfc30485a15f547aa87b927777c95d3dd"
+API_KEY = os.environ.get("RAE_KERNEL_API_KEY")
 
 class ChroniclerWalletWatcher:
     def __init__(self, wallet_address: str = TARGET_WALLET, rpc_url: str = BASE_RPC_URL):

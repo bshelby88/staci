@@ -4,6 +4,7 @@ Automates 30-second TikTok/Shorts script generation & HeyGen API rendering dispa
 """
 
 import json
+import os
 import time
 import urllib.request
 from typing import Dict, Any, Optional
@@ -11,7 +12,7 @@ from typing import Dict, Any, Optional
 HEYGEN_API_URL = "https://api.heygen.com/v2/video/generate"
 ROXUE_AVATAR_ID = "c3-0203.c3.heyron.ai"
 KERNEL_URL = "https://rae-kernel.fly.dev/v1/events"
-API_KEY = "63d86692649b48deb7161f4898b6ab3bfc30485a15f547aa87b927777c95d3dd"
+API_KEY = os.environ.get("RAE_KERNEL_API_KEY")
 
 class TiffanyHeyGenProducer:
     def __init__(self, avatar_id: str = ROXUE_AVATAR_ID):

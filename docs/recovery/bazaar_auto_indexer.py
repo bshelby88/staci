@@ -4,6 +4,7 @@ Automates health verification & Bazaar discovery registration for all 14 Fly.io 
 """
 
 import json
+import os
 import time
 import urllib.request
 from typing import List, Dict, Any
@@ -26,7 +27,7 @@ X402_FLY_SERVICES = [
 ]
 
 KERNEL_URL = "https://rae-kernel.fly.dev/v1/events"
-API_KEY = "63d86692649b48deb7161f4898b6ab3bfc30485a15f547aa87b927777c95d3dd"
+API_KEY = os.environ.get("RAE_KERNEL_API_KEY")
 
 class BazaarAutoIndexer:
     def verify_and_index_catalog(self) -> List[Dict[str, Any]]:

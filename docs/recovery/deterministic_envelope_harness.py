@@ -4,6 +4,7 @@ System Standard for RAE Task Runners (Staci, BEAN, Nimbus)
 """
 
 import sys
+import os
 import subprocess
 import time
 import json
@@ -14,7 +15,7 @@ class DeterministicEnvelope:
     def __init__(self, agent_id: str, kernel_url: str = "https://rae-kernel.fly.dev", api_key: Optional[str] = None):
         self.agent_id = agent_id
         self.kernel_url = kernel_url
-        self.api_key = api_key or "63d86692649b48deb7161f4898b6ab3bfc30485a15f547aa87b927777c95d3dd"
+        self.api_key = api_key or os.environ.get("RAE_KERNEL_API_KEY")
 
     def execute_task(self, task_id: str, command: list[str], verifier_fn: Optional[Callable[[str], bool]] = None) -> dict:
         """
