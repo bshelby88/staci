@@ -19,9 +19,11 @@ PAYMENT_DISABLED_DETAIL = "Payment verification unavailable; paid fulfillment is
 PAYMENT_DISABLED_RESPONSES = {503: {"description": PAYMENT_DISABLED_DETAIL}}
 
 BASE_RPC_URL = "https://mainnet.base.org"
+TREASURY_WALLET = "0x7861db4efc14a1ed5dd8c96c528a3796560f1393"
 USDC_CONTRACT_ADDRESS = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
-TREASURY_WALLET = "0x9e6A95B5Bf1190B5aCD00508a8E9c72eDEd5fB60"
 USDC_DECIMALS = 6
+TRANSFER_EVENT_SIGNATURE = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+KERNEL_URL = "https://rae-kernel.fly.dev/v1/events"
 
 class DisputeRequest(BaseModel):
     client_name: str
@@ -54,11 +56,17 @@ class PaymentVerification:
     def verify_base_usdc_payment(tx_hash: Optional[str], required_amount: float) -> dict:
         if not tx_hash or not tx_hash.startswith("0x") or len(tx_hash) != 66:
             return {"verified": False, "reason": "Invalid tx_hash format", "details": {}}
+        # Step 1: Query transaction by hash (chronicler pattern)
+        tx_data = PaymentVerification._rpc_post("eth_getTransactionByHash", [tx_hash])
+        if not tx_data:
+            return {"verified": False, "reason": "Transaction not found on Base mainnet", "details": {"tx_hash": tx_hash}}
+        # Step 2: Get receipt for status, confirmations, and logs
         receipt = PaymentVerification._rpc_post("eth_getTransactionReceipt", [tx_hash])
         if not receipt:
-            return {"verified": False, "reason": "Transaction not found on Base mainnet", "details": {"tx_hash": tx_hash}}
+            return {"verified": False, "reason": "Transaction receipt not found on Base mainnet", "details": {"tx_hash": tx_hash}}
         if receipt.get("status") != "0x1":
             return {"verified": False, "reason": "Transaction failed on-chain", "details": {"tx_hash": tx_hash, "status": receipt.get("status")}}
+        # Step 3: Confirmation check (>=12 blocks)
         current_block = PaymentVerification._rpc_post("eth_blockNumber", [])
         confirmations = 0
         if current_block:
@@ -67,12 +75,17 @@ class PaymentVerification:
             confirmations = current_block_num - tx_block_num
             if confirmations < 12:
                 return {"verified": False, "reason": f"Insufficient confirmations: {confirmations}/12", "details": {"tx_hash": tx_hash, "confirmations": confirmations}}
-        logs = receipt.get("logs", [])
-        usdc_transfer_found = False
+        # Step 4: Check recipient
+        to_address = receipt.get("to", "")
+        if to_address.lower() != TREASURY_WALLET.lower():
+            return {"verified": False, "reason": "Recipient mismatch", "details": {"recipient": to_address}}
+        # Step 5: Parse USDC Transfer events
         transfer_amount = 0
-        for log in logs:
+        usdc_transfer_found = False
+        for log in receipt.get("logs", []):
             if log.get("address", "").lower() == USDC_CONTRACT_ADDRESS.lower():
-                if len(log.get("topics", [])) >= 3:
+                topics = log.get("topics", [])
+                if len(topics) >= 3 and topics[0].lower() == TRANSFER_EVENT_SIGNATURE.lower():
                     try:
                         amount_hex = log["data"]
                         if amount_hex and amount_hex != "0x":
@@ -82,13 +95,29 @@ class PaymentVerification:
                         pass
         if not usdc_transfer_found:
             return {"verified": False, "reason": "No USDC transfer found in transaction logs", "details": {"tx_hash": tx_hash}}
+        # Step 6: Amount verification
         tolerance = required_amount * 0.01
         if abs(transfer_amount - required_amount) > tolerance:
-            return {"verified": False, "reason": f"Amount mismatch", "details": {"expected": required_amount, "actual": transfer_amount}}
-        to_address = receipt.get("to", "")
-        if to_address.lower() != TREASURY_WALLET.lower():
-            return {"verified": False, "reason": "Recipient mismatch", "details": {"recipient": to_address}}
+            return {"verified": False, "reason": "Amount mismatch", "details": {"expected": required_amount, "actual": transfer_amount}}
+        # Step 7: Replay protection — check dedup key against AEK Kernel event store
+        dedup_key = f"base_revenue_{tx_hash[:16]}"
+        if PaymentVerification._check_replay(dedup_key):
+            return {"verified": False, "reason": "Replay detected — transaction already processed", "details": {"tx_hash": tx_hash, "dedup_key": dedup_key}}
         return {"verified": True, "reason": "Payment verified on Base mainnet", "details": {"tx_hash": tx_hash, "amount_usdc": transfer_amount, "confirmations": confirmations, "recipient": TREASURY_WALLET}}
+
+    @staticmethod
+    def _check_replay(dedup_key: str) -> bool:
+        """Check AEK Kernel event store for existing dedup key (replay protection)."""
+        try:
+            url = f"{KERNEL_URL}?deduplication_key={dedup_key}"
+            req = urllib.request.Request(url, headers={'Content-Type': 'application/json'})
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                events = json.loads(resp.read().decode('utf-8'))
+                if isinstance(events, list):
+                    return len(events) > 0
+                return False
+        except Exception:
+            return False
 
 def reject_unverified_payment_gate() -> None:
     raise HTTPException(status_code=503, detail=PAYMENT_DISABLED_DETAIL)
